@@ -1,0 +1,66 @@
+{
+  consul: '{{ if .CONSUL_AGENT }}localhost{{ else }}{{ .CONSUL | default "consul" }}{{ end }}:8500',
+  jobs: [
+    {
+      name: 'preStart',
+      exec: '/bin/config-rethinkdb.sh preStart'
+      {{ if .CONSUL_AGENT }},
+      when: {
+        source: 'consul-agent',
+        once: 'healthy'
+      }{{ end }}
+    },
+    {
+      name: 'rethinkdb',
+      port: 28015,
+      exec: [
+        'rethinkdb',
+        '--config-file', '/etc/rethinkdb.conf',
+        '--bind', 'all',
+        '--no-update-check'
+      ],
+      health: {
+        exec: 'pgrep rethinkdb',
+        interval: 10,
+        ttl: 25
+      },
+      when: {
+        source: 'preStart',
+        once: 'exitSuccess'
+      },
+      restarts: 'unlimited'
+    },{{ if .CONSUL_AGENT }}
+    {
+      name: 'consul-agent',
+      exec: ['/usr/local/bin/consul', 'agent',
+                  '-data-dir=/data',
+                  '-config-dir=/config',
+                  '-log-level=err',
+                  '-rejoin',
+                  '-retry-join', '{{ .CONSUL | default "consul" }}',
+                  '-retry-max', '10',
+                  '-retry-interval', '10s'],
+      health: {
+        exec: 'curl -so /dev/null http://localhost:8500',
+        interval: 10,
+        ttl: 25
+      },
+      restarts: 'unlimited'
+    },
+    {{ end }}
+    {
+      name: 'rethinkdb-onchange',
+      exec: '/bin/config-rethinkdb.sh onChange',
+      when: {
+        source: 'watch.rethinkdb',
+        once: 'changed'
+      }
+    }
+  ],
+  watches: [
+    {
+      name: 'rethinkdb',
+      interval: 5
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+###############################
+## RethinkDB configuration
+###############################
+
+### File path options
+
+## Directory to store data and metadata
+## Command line default: ./rethinkdb_data
+## Init script default: /var/lib/rethinkdb/<name>/ (where <name> is the name of this file without the extension)
+# directory=/var/lib/rethinkdb/default
+
+## Log file options
+## Default: <directory>/log_file
+# log-file=/var/log/rethinkdb
+
+### Network options
+
+## The host:port of a node that rethinkdb will connect to
+## This option can be specified multiple times.
+## Default: none
+# join=example.com:29015
+{{ if service "rethinkdb" }}
+{{range service "rethinkdb"}}
+join={{.Address}}:29015
+{{end}}
+{{ end }}
+
+### Web options
+
+## Disable web administration console
+# no-http-admin
+
+### Meta
+
+## The name for this server (as will appear in the metadata).
+## If not specified, it will be randomly chosen from a short list of names.
+# server-name=server1
