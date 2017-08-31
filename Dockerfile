@@ -1,6 +1,13 @@
-FROM alpine:3.6
+FROM debian:jessie
 
-RUN apk add --update bash curl rethinkdb
+RUN apt-key adv --keyserver pgp.mit.edu --recv-keys 1614552E5765227AEC39EFCFA7E00EF33A8F2399
+RUN echo "deb http://download.rethinkdb.com/apt jessie main" > /etc/apt/sources.list.d/rethinkdb.list
+
+ENV RETHINKDB_PACKAGE_VERSION 2.3.5~0jessie
+
+RUN apt-get update \
+	&& apt-get install -y rethinkdb=$RETHINKDB_PACKAGE_VERSION curl unzip --force-yes \
+	&& rm -rf /var/lib/apt/lists/*
 
 # Install Consul
 # Releases at https://releases.hashicorp.com/consul
@@ -30,9 +37,9 @@ RUN set -ex \
 # Add Containerpilot and set its configuration
 COPY etc/containerpilot.json5 /etc
 ENV CONTAINERPILOT /etc/containerpilot.json5
-ENV CONTAINERPILOT_VERSION 3.3.3
+ENV CONTAINERPILOT_VERSION 3.4.2
 
-RUN export CONTAINERPILOT_CHECKSUM=8d680939a8a5c8b27e764d55a78f5e3ae7b42ef4 \
+RUN export CONTAINERPILOT_CHECKSUM=5c99ae9ede01e8fcb9b027b5b3cb0cfd8c0b8b88 \
     && export archive=containerpilot-${CONTAINERPILOT_VERSION}.tar.gz \
     && curl -Lso /tmp/${archive} \
          "https://github.com/joyent/containerpilot/releases/download/${CONTAINERPILOT_VERSION}/${archive}" \
@@ -44,7 +51,6 @@ RUN export CONTAINERPILOT_CHECKSUM=8d680939a8a5c8b27e764d55a78f5e3ae7b42ef4 \
 # ref https://www.rethinkdb.com/docs/config-file/
 COPY etc/rethinkdb.conf.ctmpl /etc
 COPY bin /bin
+RUN mkdir -p /var/lib/rethinkdb/default
 
-EXPOSE 28015 29015 8080
-
-CMD ["/usr/local/bin/containerpilot"]
+CMD ["containerpilot"]

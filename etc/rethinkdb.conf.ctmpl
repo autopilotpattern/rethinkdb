@@ -7,11 +7,11 @@
 ## Directory to store data and metadata
 ## Command line default: ./rethinkdb_data
 ## Init script default: /var/lib/rethinkdb/<name>/ (where <name> is the name of this file without the extension)
-# directory=/var/lib/rethinkdb/default
+directory=/var/lib/rethinkdb/default
 
 ## Log file options
 ## Default: <directory>/log_file
-# log-file=/var/log/rethinkdb
+log-file=/var/log/rethinkdb
 
 ### Network options
 

@@ -1,0 +1,30 @@
+rethinkdb:
+  image: autopilotpattern/rethinkdb:2.3.5r2
+  mem_limit: 1g
+  restart: always
+  ports:
+    - 29015
+    - 28015
+    - 8080
+  environment:
+    - CONSUL=consul
+    - CONSUL_AGENT=1
+  links:
+    - consul:consul
+
+
+# Start with a single host which will bootstrap the cluster.
+# In production we'll want to use an HA cluster.
+consul:
+  image: autopilotpattern/consul:0.7.2-r0.8
+  restart: always
+  mem_limit: 128m
+  ports:
+    - 8500:8500
+  command: >
+    /usr/local/bin/containerpilot
+    /bin/consul agent -server
+      -config-dir=/etc/consul
+      -log-level=err
+      -bootstrap-expect 1
+      -ui-dir /ui

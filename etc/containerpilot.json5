@@ -14,9 +14,8 @@
       name: 'rethinkdb',
       port: 28015,
       exec: [
-        'rethinkdb',
+        'rethinkdb', '--bind', 'all',
         '--config-file', '/etc/rethinkdb.conf',
-        '--bind', 'all',
         '--no-update-check'
       ],
       health: {
